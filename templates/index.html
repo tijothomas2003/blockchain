@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>University Blockchain Chat</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        color: #333;
+        background-color: #f9f9f9;
+      }
+
+      /* Navigation Bar */
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: white;
+        padding: 15px 50px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        height: 8ev;
+      }
+
+      .navbar .logo {
+        display: flex;
+        align-items: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #4a90e2;
+      }
+
+      .navbar .logo span {
+        color: #9013fe;
+        font-size: 1.1rem;
+        margin-left: 5px;
+      }
+
+      .navbar .nav-links {
+        display: flex;
+        gap: 25px;
+      }
+
+      .navbar a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        transition: color 0.3s;
+      }
+
+      .navbar a:hover {
+        color: #9013fe;
+      }
+
+      /* Overall container */
+      .chat-container {
+        display: flex;
+        height: 91vh;
+        font-family: "Arial", sans-serif;
+        background-color: #f4f5f7;
+        margin-bottom: 0;
+      }
+
+      /* Left Sidebar */
+      .chat-left {
+        width: 20%;
+        background: #9388e4;
+        color: #050b0c;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .chat-left .profile {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .chat-left img {
+        border-radius: 50%;
+        margin-bottom: 10px;
+      }
+
+      .chat-left h4 {
+        margin: 0;
+        font-size: 1.2em;
+      }
+
+      .chat-left h5 {
+        font-size: 0.9em;
+        color: #050b0c;
+      }
+
+      .about-section {
+        margin: 20px 0;
+        text-align: center;
+      }
+
+      .buttons button {
+        min-height: 80px;
+        width: 100%;
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #5d52ba;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 15px;
+        font-size: medium;
+        font-weight: bold;
+        transition: background 0.3s ease;
+      }
+
+      .buttons button:hover {
+        background-color: #1abc9c;
+      }
+
+      /* Main Chat Section */
+      .chat-main {
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+        background: white;
+        /* box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
+      }
+
+      .chat-header {
+        background: #5d52ba;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-size: 1.5em;
+      }
+
+      .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background-color: #ecf0f1;
+      }
+
+      .message-bubble {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        max-width: 80%;
+        padding: 10px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .sent {
+        background-color: #2ecc71;
+        color: white;
+        margin-left: auto;
+      }
+
+      .received {
+        background-color: #dfe6e9;
+        color: #2c3e50;
+        margin-right: auto;
+      }
+
+      .message-avatar img {
+        border-radius: 50%;
+        margin-right: 10px;
+      }
+
+      .message-content .user-name {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .message-content .timestamp {
+        font-size: 0.75em;
+        color: #7f8c8d;
+      }
+
+      .chat-input {
+        display: flex;
+        padding: 10px;
+        border-top: 1px solid #bdc3c7;
+        background-color: white;
+      }
+
+      .chat-input input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #bdc3c7;
+        border-radius: 5px;
+        margin-right: 10px;
+      }
+
+      .chat-input button {
+        background: #5d52ba;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+
+      .chat-input button:hover {
+        background: #2980b9;
+      }
+
+      /* Right Sidebar */
+      .chat-right {
+        width: 30%;
+        background: #9388e4;
+        color: #010b0e;
+        padding: 20px;
+      }
+
+      .chat-right h3 {
+        margin-bottom: 10px;
+        text-align: center;
+        font-size: 25px;
+      }
+
+      .chat-right ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .chat-right li {
+        background-color: #dfe5eb;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+      }
+      .chat-right li p {
+        margin-bottom: 20px;
+        border-radius: 5px;
+      }
+      .approval-buttons button {
+        margin-left: 50px;
+        padding: 5px 10px;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+
+      .approve-btn {
+        background: #27ae60;
+        color: white;
+      }
+
+      .reject-btn {
+        background: #e74c3c;
+        color: white;
+      }
+
+      .approve-btn:hover {
+        background: #2ecc71;
+      }
+
+      .reject-btn:hover {
+        background: #c0392b;
+      }
+
+      /* Buttons */
+      .approve-btn,
+      .reject-btn {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 5px;
+        margin-top: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s;
+      }
+
+      .approve-btn {
+        background: #4caf50;
+        color: white;
+      }
+
+      .approve-btn:hover {
+        background: #45a049;
+      }
+
+      .reject-btn {
+        background: #f44336;
+        color: white;
+      }
+
+      .reject-btn:hover {
+        background: #e53935;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+      <div class="logo">
+        <img
+          src="static/landing/images/log.png"
+          alt="Logo"
+          style="margin-right: 10px width: 40px; height: 40px"
+        />
+        University <span> Communication Portal</span>
+      </div>
+      <div class="nav-links">
+        <!-- <a href="/">Homepage</a> -->
+        <a href="/">logout</a>
+      </div>
+    </nav>
+
+    <!-- Chat Application -->
+    <div class="chat-container">
+      <!-- Left Sidebar -->
+      <div class="chat-left">
+        <div class="profile">
+          {% if role == 'University Representative' %}
+          <img
+            src="static/landing/images/unilogo.jpg"
+            alt="University Profile"
+            style="width: 90px; height: 90px"
+          />
+          {% else %}
+          <img
+            src="static/landing/images/userlogo4.webp"
+            alt="Default Profile"
+            style="width: 95px; height: 95px"
+          />
+          {% endif %}
+          <h4>{{ username }}</h4>
+          <h5>{{ role }}</h5>
+        </div>
+        <div class="about-section">
+          <h3>About the App</h3>
+          <p>
+            Secure chat platform integrating blockchain technology for privacy
+            and transparency.
+          </p>
+        </div>
+        <div class="buttons">
+          <!-- <button onclick="register()">Register New User</button> -->
+          <button onclick="logout()">Logout</button>
+        </div>
+      </div>
+
+      <!-- Main Chat Section -->
+      <div class="chat-main">
+        <div class="chat-header">Chat Room</div>
+        <div class="chat-messages">
+          {% for message in a_message %}
+          <div class="message">
+            <div
+              class="message-bubble {% if message.user_name == username %}sent{% else %}received{% endif %}"
+            >
+              <div class="message-avatar">
+                {% if message.user_name == 'University' %}
+                <img
+                  src="static/landing/images/unilogo.jpg"
+                  alt="User Avatar"
+                  style="width: 60px; height: 60px"
+                />
+                {% else %}
+                <img
+                  src="static/landing/images/userlogo4.webp"
+                  alt="User Avatar"
+                  style="width: 60px; height: 60px"
+                />
+                {% endif %}
+              </div>
+
+              <div class="message-content">
+                <p class="user-name">{{ message.user_name }}</p>
+                <p class="text">{{ message.message }}</p>
+                <span class="timestamp">10:45 AM</span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="chat-input">
+          <input
+            id="message-input"
+            type="text"
+            placeholder="Type a message..."
+          />
+          <button id="send-btn"><i class="fas fa-paper-plane"></i> Send</button>
+        </div>
+      </div>
+      <!-- Right Sidebar -->
+      <div class="chat-right">
+        <h3>Pending Approvals</h3>
+        <ul>
+          {% for message in p_message %}
+          <li>
+            <p>
+              <strong>{{ message.user_name }}</strong>: {{ message.message }}
+            </p>
+            <div class="approval-buttons">
+              <button
+                class="approve-btn"
+                onclick="handleApprove({{ message.id }})"
+              >
+                Approve
+              </button>
+              <button
+                class="reject-btn"
+                onclick="handleReject({{ message.id }})"
+              >
+                Reject
+              </button>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+    <script>
+      const socket = io();
+      const username = "{{ username }}";
+      const role = "{{ role }}";
+      const userid = "{{ userid }}";
+
+      document.getElementById("send-btn").addEventListener("click", () => {
+        const message = document.getElementById("message-input").value;
+        console.log("clicked send");
+        console.log(message);
+        socket.emit("send_message", { username, message, userid });
+        console.log("clicked send");
+        location.reload();
+      });
+
+      socket.on("new_pending_message", (message) => {
+        const pendingDiv = document.getElementById("pending-messages");
+        const msgDiv = document.createElement("div");
+        msgDiv.innerHTML = `
+                <p>${message.sender}: ${message.content}</p>
+                <button onclick="approveMessage(${JSON.stringify(
+                  message
+                )})">Approve</button>
+                <button onclick="rejectMessage(${JSON.stringify(
+                  message
+                )})">Reject</button>`;
+        pendingDiv.appendChild(msgDiv);
+      });
+
+      socket.on("message_approved", (message) => {
+        const chatDiv = document.getElementById("messages");
+        chatDiv.innerHTML += `<p>${message.sender}: ${message.content}</p>`;
+      });
+
+      socket.on("message_rejected", (message) => {
+        alert(`${message.sender}'s message was rejected.`);
+      });
+
+      function approveMessage(message) {
+        socket.emit("approve_message", { message });
+      }
+
+      function rejectMessage(message) {
+        socket.emit("reject_message", { message });
+      }
+      function logout() {
+        window.location.href = "/logout";
+      }
+      function register() {
+        window.location.href = "/register";
+      }
+      function handleApprove(messageId) {
+        fetch(`/approve_message/${messageId}`, { method: "POST" })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              // alert("Message approved!");
+              location.reload(); // Reload the page to update the pending approvals
+            } else {
+              alert("Failed to approve the message.");
+            }
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      // Reject message
+      function handleReject(messageId) {
+        fetch(`/reject_message/${messageId}`, { method: "POST" })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              // alert("Message rejected!");
+              location.reload(); // Reload the page to update the pending approvals
+            } else {
+              alert("Failed to reject the message.");
+            }
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+    </script>
+  </body>
+</html>

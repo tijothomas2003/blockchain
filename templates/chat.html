@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>University Chat Room</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+  </head>
+  <body>
+    <h1>Welcome, {{ username }} ({{ role }})</h1>
+    <div id="chat-room">
+      <div id="messages"></div>
+      <input
+        id="message-input"
+        type="text"
+        placeholder="Type your message..."
+      />
+      <button id="send-btn">Send</button>
+    </div>
+    <div id="pending-messages">
+      <h3>Pending Messages</h3>
+    </div>
+
+    <script>
+      const socket = io();
+      const username = "{{ username }}";
+      const role = "{{ role }}";
+
+      document.getElementById("send-btn").addEventListener("click", () => {
+        const message = document.getElementById("message-input").value;
+        socket.emit("send_message", { username, message, role });
+      });
+
+      socket.on("new_pending_message", (message) => {
+        const pendingDiv = document.getElementById("pending-messages");
+        const msgDiv = document.createElement("div");
+        msgDiv.innerHTML = `
+                <p>${message.sender}: ${message.content}</p>
+                <button onclick="approveMessage(${JSON.stringify(
+                  message
+                )})">Approve</button>
+                <button onclick="rejectMessage(${JSON.stringify(
+                  message
+                )})">Reject</button>`;
+        pendingDiv.appendChild(msgDiv);
+      });
+
+      socket.on("message_approved", (message) => {
+        const chatDiv = document.getElementById("messages");
+        chatDiv.innerHTML += `<p>${message.sender}: ${message.content}</p>`;
+      });
+
+      socket.on("message_rejected", (message) => {
+        alert(`${message.sender}'s message was rejected.`);
+      });
+
+      function approveMessage(message) {
+        socket.emit("approve_message", { message });
+      }
+
+      function rejectMessage(message) {
+        socket.emit("reject_message", { message });
+      }
+    </script>
+  </body>
+</html>
