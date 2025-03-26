@@ -306,11 +306,10 @@
     <!-- Navigation Bar -->
     <nav class="navbar">
       <div class="logo">
-        <img
-          src="static/landing/images/log.png"
-          alt="Logo"
-          style="margin-right: 10px width: 40px; height: 40px"
-        />
+        <img src="static/landing/images/log.png"
+        alt="Logo"
+        style="margin-right: 10px; width: 40px; height: 40px;" />
+        
         University <span> Communication Portal</span>
       </div>
       <div class="nav-links">
@@ -399,6 +398,11 @@
       <!-- Right Sidebar -->
       <div class="chat-right">
         <h3>Pending Approvals</h3>
+        
+        {% if p_message|length == 0 %}
+        <p>No pending messages.</p>
+        {% endif %}
+        
         <ul>
           {% for message in p_message %}
           <li>
@@ -406,16 +410,10 @@
               <strong>{{ message.user_name }}</strong>: {{ message.message }}
             </p>
             <div class="approval-buttons">
-              <button
-                class="approve-btn"
-                onclick="handleApprove({{ message.id }})"
-              >
+              <button class="approve-btn" onclick="handleApprove('{{ message.id }}')">
                 Approve
               </button>
-              <button
-                class="reject-btn"
-                onclick="handleReject({{ message.id }})"
-              >
+              <button class="reject-btn" onclick="handleReject('{{ message.id }}')">
                 Reject
               </button>
             </div>
@@ -423,7 +421,7 @@
           {% endfor %}
         </ul>
       </div>
-    </div>
+      
 
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
     <script>

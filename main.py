@@ -17,7 +17,8 @@ else:
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
+
 
 # Initialize database
 def init_db():
@@ -138,6 +139,7 @@ def chat():
         }
         if status =='pending' and role<session['role']:
            pending_msg.append(message_data)
+               return render_template('index.html', p_message=pending_msg, a_message=approved_msg)
         # if status =='approved':
         #    approved_msg.append(message_data)
     block_msg=b.getAllMessage()
