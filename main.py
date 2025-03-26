@@ -8,17 +8,15 @@ import blockChain
 file_path = "blockChainDataBase.json"
 
 if not os.path.exists(file_path):
-    b=blockChain.blockchain(gen=True)
+    b = blockChain.blockchain(gen=True)
     b.create_block()
     print(f"{file_path} has been created.")
 else:
-    b=blockChain.blockchain()
-
+    b = blockChain.blockchain()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
-
 
 # Initialize database
 def init_db():
@@ -50,55 +48,40 @@ def init_db():
     conn.close()
 
 init_db()
-roles=['Student','Class Representative','Teacher','HOD','Principal','Dean','University Representative']
+
+roles = ['Student', 'Class Representative', 'Teacher', 'HOD', 'Principal', 'Dean', 'University Representative']
+
 @app.route('/')
 def index():
-    # return render_template('login.html')
     return render_template('landing.html')
 
-@app.route('/login', methods=['POST','GET'])
+@app.route('/login', methods=['POST', 'GET'])
 def login():
     username = request.args.get('email')
     password = request.args.get('password')
- 
+
     conn = sqlite3.connect('chat_app.db')
     c = conn.cursor()
-
     c.execute('SELECT * FROM users WHERE email=?', (username,))
     user = c.fetchone()
     conn.close()
-    if not user:
-        print("no user")
-        return render_template('landing.html', error='Invalid username or password')
-    print(user)
-    if user[4]!=password:
-        print("wrong password")
+
+    if not user or user[4] != password:
         return render_template('landing.html', error='Invalid username or password')
 
-    session['firstname'] = user[1]
-    session['email'] = user[3]
-    session['lastname'] = user[2]
-    session['role'] = user[5]
-    session['userid'] = user[0]
-        
+    session['firstname'], session['lastname'], session['email'], session['role'], session['userid'] = user[1], user[2], user[3], user[5], user[0]
+
     return redirect('/chat')
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         data = request.form
-        print(data)
         try:
             conn = sqlite3.connect('chat_app.db')
             c = conn.cursor()
-            c.execute('''
-                INSERT INTO users (firstname, lastname, email, password, role)
-                VALUES (?, ?, ?, ?, ? )
-            ''', (
-                data['firstname'], data['lastname'], data['email'], data['password'], 
-                 data['role']
-            ))
+            c.execute('INSERT INTO users (firstname, lastname, email, password, role) VALUES (?, ?, ?, ?, ?)',
+                      (data['firstname'], data['lastname'], data['email'], data['password'], data['role']))
             conn.commit()
             conn.close()
             return redirect(url_for('register'))
@@ -115,99 +98,76 @@ def logout():
 def chat():
     conn = sqlite3.connect('chat_app.db')
     c = conn.cursor()
-
     c.execute('SELECT id, user_id, message, role, status, user_name FROM messages')
     all_messages = c.fetchall()
     conn.close()
 
-    messages = {
-        'pending': [],
-        'approved': [],
-        'rejected': []
-    }
-    approved_msg=[]
-    pending_msg=[]
-    print(all_messages)
+    pending_msg, approved_msg = [], []
+    
     for message in all_messages:
-        message_id, user_id, message_text, role, status,user_name = message
-        message_data = {
-            'id': message_id,
-            'user_id': user_id,
-            'message': message_text,
-            'role': role,
-            "user_name":user_name
-        }
-        if status =='pending' and role<session['role']:
-           pending_msg.append(message_data)
-               return render_template('index.html', p_message=pending_msg, a_message=approved_msg)
-        # if status =='approved':
-        #    approved_msg.append(message_data)
-    block_msg=b.getAllMessage()
+        message_id, user_id, message_text, role, status, user_name = message
+        message_data = {'id': message_id, 'user_id': user_id, 'message': message_text, 'role': role, "user_name": user_name}
+
+        if status == 'pending' and int(role) < int(session['role']):
+            pending_msg.append(message_data)
+
+    block_msg = b.getAllMessage()
     for message in block_msg:
-        if message['index']!=0:
-            message_data = {
+        if message['index'] != 0:
+            approved_msg.append({
                 'id': message['index'],
                 'user_id': message['sender_id'],
                 'message': message["message"],
                 'role': message['role'],
-                "user_name":message['user_name'],
-                'time':message['time']
-            }
-            approved_msg.append(message_data)
-    print(pending_msg)
-    if session['role']=='6':
-        roles=['Student','Class Representative','Teacher','HOD','Principal','Dean','University Representative']
-        return render_template('index_reg.html', username=session['firstname']+' '+session['lastname'], role=roles[int(session['role'])],userid=session['userid'],a_message=approved_msg,p_message=pending_msg)
-    else:
-        roles=['Student','Class Representative','Teacher','HOD','Principal','Dean','University Representative']
-        return render_template('index.html', username=session['firstname']+' '+session['lastname'], role=roles[int(session['role'])],userid=session['userid'],a_message=approved_msg,p_message=pending_msg)
+                "user_name": message['user_name'],
+                'time': message['time']
+            })
+
+    if session['role'] == '6':
+        return render_template('index_reg.html', username=session['firstname'] + ' ' + session['lastname'],
+                               role=roles[int(session['role'])], userid=session['userid'],
+                               a_message=approved_msg, p_message=pending_msg)
+    return render_template('index.html', username=session['firstname'] + ' ' + session['lastname'],
+                           role=roles[int(session['role'])], userid=session['userid'],
+                           a_message=approved_msg, p_message=pending_msg)
+
 @socketio.on('send_message')
 def handle_send_message(data):
-    print("Received data:",data)
     conn = sqlite3.connect('chat_app.db')
     c = conn.cursor()
     c.execute('SELECT id, role FROM users WHERE id = ?', (data['userid'],))
     user = c.fetchone()
-    print(user)
+    
     formatted_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     if user:
-        if user[1]!='6':
-            c.execute('''
-                INSERT INTO messages (user_id, message, role,user_name,time)
-                VALUES (?, ?, ?, ?,?)
-            ''', (user[0], data['message'], user[1],session['email'],formatted_datetime ))
-            conn.commit()
-        if user[1]=='6':
-            c.execute('''
-                INSERT INTO messages (user_id, message, role,user_name,time, status)
-                VALUES (?, ?, ?, ?, ?,?)
-            ''', (user[0], data['message'], user[1],'University',formatted_datetime,'approved'))
-            conn.commit()
-            result_block=b.create_block(sender_id=user[0],user_name=session['email'],approver_id=session['userid'],message=data['message'],role=user[1],time=formatted_datetime)
+        if user[1] != '6':
+            c.execute('INSERT INTO messages (user_id, message, role, user_name, time) VALUES (?, ?, ?, ?, ?)',
+                      (user[0], data['message'], user[1], session['email'], formatted_datetime))
+        else:
+            c.execute('INSERT INTO messages (user_id, message, role, user_name, time, status) VALUES (?, ?, ?, ?, ?, ?)',
+                      (user[0], data['message'], user[1], 'University', formatted_datetime, 'approved'))
+            b.create_block(sender_id=user[0], user_name=session['email'], approver_id=session['userid'],
+                           message=data['message'], role=user[1], time=formatted_datetime)
+        conn.commit()
     conn.close()
-    print('done')
 
     return redirect('/chat')
+
 @app.route('/approve_message/<int:message_id>', methods=['POST'])
 def approve_message(message_id):
-    
     conn = sqlite3.connect('chat_app.db')
     c = conn.cursor()
-
     c.execute("UPDATE messages SET status = 'approved' WHERE id = ?", (message_id,))
     conn.commit()
 
-    conn.close()
-    conn = sqlite3.connect('chat_app.db')
-    c = conn.cursor()
     c.execute('SELECT * FROM messages WHERE id=?', (message_id,))
     mssg = c.fetchone()
-    print(mssg[1])
-    result_block=b.create_block(sender_id=mssg[1],user_name=mssg[4],approver_id=session['userid'],message=mssg[2],role=mssg[3],time=mssg[5])
     conn.close()
+
+    result_block = b.create_block(sender_id=mssg[1], user_name=mssg[4], approver_id=session['userid'],
+                                  message=mssg[2], role=mssg[3], time=mssg[5])
+
     return jsonify({"success": result_block})
-    # except Exception as e:
-    #     return jsonify({"success": False, "error": str(e)})
 
 @app.route('/reject_message/<int:message_id>', methods=['POST'])
 def reject_message(message_id):
@@ -216,12 +176,10 @@ def reject_message(message_id):
         c = conn.cursor()
         c.execute("UPDATE messages SET status = 'rejected' WHERE id = ?", (message_id,))
         conn.commit()
-
         conn.close()
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
-
 
 @socketio.on('approve_message')
 def handle_approve_message(data):
@@ -229,11 +187,13 @@ def handle_approve_message(data):
     c = conn.cursor()
     c.execute('UPDATE messages SET status = "approved" WHERE id = ?', (data['message_id'],))
     conn.commit()
-    conn.close()
-    c.execute('SELECT * FROM users WHERE id=?', (data['message_id'],))
+
+    c.execute('SELECT * FROM messages WHERE id=?', (data['message_id'],))
     mssg = c.fetchone()
     conn.close()
-    result_block=b.create_block(sender_id=mssg[1],user_name=mssg[4],approver_id=session['userid'],message=mssg[2],role=mssg[3],time=mssg[5])
+
+    b.create_block(sender_id=mssg[1], user_name=mssg[4], approver_id=session['userid'],
+                   message=mssg[2], role=mssg[3], time=mssg[5])
 
     emit('message_approved', data, broadcast=True)
 
