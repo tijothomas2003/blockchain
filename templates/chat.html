@@ -18,46 +18,54 @@
     <div id="pending-messages">
       <h3>Pending Messages</h3>
     </div>
+    <!-- Add this for rejected messages -->
+    <div id="rejected-messages">
+      <h3>Rejected Messages</h3>
+    </div>
 
     <script>
-      const socket = io();
-      const username = "{{ username }}";
-      const role = "{{ role }}";
+      const socket = io()
+      const username = '{{ username }}'
+      const role = '{{ role }}'
 
-      document.getElementById("send-btn").addEventListener("click", () => {
-        const message = document.getElementById("message-input").value;
-        socket.emit("send_message", { username, message, role });
-      });
+      document.getElementById('send-btn').addEventListener('click', () => {
+        const message = document.getElementById('message-input').value
+        socket.emit('send_message', { username, message, role })
+      })
 
-      socket.on("new_pending_message", (message) => {
-        const pendingDiv = document.getElementById("pending-messages");
-        const msgDiv = document.createElement("div");
+      socket.on('new_pending_message', (message) => {
+        const pendingDiv = document.getElementById('pending-messages')
+        const msgDiv = document.createElement('div')
         msgDiv.innerHTML = `
-                <p>${message.sender}: ${message.content}</p>
-                <button onclick="approveMessage(${JSON.stringify(
-                  message
-                )})">Approve</button>
-                <button onclick="rejectMessage(${JSON.stringify(
-                  message
-                )})">Reject</button>`;
-        pendingDiv.appendChild(msgDiv);
-      });
+        <p>${message.sender}: ${message.content}</p>
+        <button onclick="approveMessage(${JSON.stringify(
+          message
+        )})">Approve</button>
+        <button onclick="rejectMessage(${JSON.stringify(
+          message
+        )})">Reject</button>`
+        pendingDiv.appendChild(msgDiv)
+      })
 
-      socket.on("message_approved", (message) => {
-        const chatDiv = document.getElementById("messages");
-        chatDiv.innerHTML += `<p>${message.sender}: ${message.content}</p>`;
-      });
+      socket.on('message_approved', (message) => {
+        const chatDiv = document.getElementById('messages')
+        chatDiv.innerHTML += `<p>${message.sender}: ${message.content}</p>`
+      })
 
-      socket.on("message_rejected", (message) => {
-        alert(`${message.sender}'s message was rejected.`);
-      });
+      socket.on('message_rejected', (message) => {
+        const rejectedDiv = document.getElementById('rejected-messages')
+        const msgDiv = document.createElement('div')
+        msgDiv.innerHTML = `
+        <p style="color: red;">${message.sender}: ${message.content} (Rejected)</p>`
+        rejectedDiv.appendChild(msgDiv)
+      })
 
       function approveMessage(message) {
-        socket.emit("approve_message", { message });
+        socket.emit('approve_message', { message })
       }
 
       function rejectMessage(message) {
-        socket.emit("reject_message", { message });
+        socket.emit('reject_message', { message })
       }
     </script>
   </body>
