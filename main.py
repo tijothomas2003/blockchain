@@ -46,14 +46,15 @@ def init_db():
         )
     ''')
      # ADD THIS LINE BELOW:
-   c.execute("PRAGMA table_info(messages)")
+  c.execute("PRAGMA table_info(messages)")
 columns = [col[1] for col in c.fetchall()]
+
 if 'rejection_reason' not in columns:
     c.execute("ALTER TABLE messages ADD COLUMN rejection_reason TEXT")
 
+conn.commit()
+conn.close()
 
-    conn.commit()
-    conn.close()
 
 init_db()
 
