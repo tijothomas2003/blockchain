@@ -21,7 +21,8 @@ idna==3.10
 Jinja2==3.1.6
 jsonpointer==2.1
 MarkupSafe==3.0.2
-mkl-service==2.4.0
+mkl-service==2.4.2
+
 packaging==24.2
 protobuf==3.20.3
 pyasn1-modules==0.2.8
