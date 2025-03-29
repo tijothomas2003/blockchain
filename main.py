@@ -87,7 +87,7 @@ def login():
         user[1], user[2], user[3], user[5], user[0]
     )
 
-    return redirect(url_for('dashboard'))
+    return redirect(url_for('chat_page.html'))
 
 
 # @app.route('/login', methods=['POST', 'GET'])
