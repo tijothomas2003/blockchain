@@ -79,7 +79,7 @@ def login():
     if not user or user[4] != password:
         return render_template('landing.html', error='Invalid username or password')
 
-    session['firstname'], session['lastname'], session['email'], session['role'], session['userid'] = user[1], user[2], user[3], user[5], user[0]
+    session['firstname'], session['lastname'], session['email'], session['role'], session['userid'] = user[1], user[2], user[3], int(user[5]), user[0]
 
     return redirect('/chat')
 
@@ -133,7 +133,7 @@ def chat():
                 'time': message['time']
             })
 
-    if session['role'] == '6':
+    if int(session['role']) == 6:
         return render_template(
             'index_reg.html',
             username=session['firstname'] + ' ' + session['lastname'],
