@@ -45,15 +45,16 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id)
         )
     ''')
- # ADD THIS LINE BELOW:
-c.execute("PRAGMA table_info(messages)")
-columns = [col[1] for col in c.fetchall()]
+    
+    # Check if rejection_reason column exists
+    c.execute("PRAGMA table_info(messages)")
+    columns = [col[1] for col in c.fetchall()]
 
-if 'rejection_reason' not in columns:
-    c.execute("ALTER TABLE messages ADD COLUMN rejection_reason TEXT")
+    if 'rejection_reason' not in columns:
+        c.execute("ALTER TABLE messages ADD COLUMN rejection_reason TEXT")
 
-conn.commit()
-conn.close()
+    conn.commit()
+    conn.close()
 
 
 init_db()
@@ -117,7 +118,6 @@ def chat():
         message_id, user_id, message_text, role, status, user_name = message
         message_data = {'id': message_id, 'user_id': user_id, 'message': message_text, 'role': role, "user_name": user_name}
 
-        # Correct indentation for if statement
         if status == 'pending' and int(role) < int(session.get('role', '0')):
             pending_msg.append(message_data)
 
@@ -162,18 +162,15 @@ def handle_send_message(data):
     formatted_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     if user:
         if user[1] != '6':
-           c.execute('INSERT INTO messages (user_id, message, role, user_name, time) VALUES (?, ?, ?, ?, ?)',
-          (user[0], data['message'], user[1], f"{session['firstname']} {session['lastname']}", formatted_datetime))
-
+            c.execute('INSERT INTO messages (user_id, message, role, user_name, time) VALUES (?, ?, ?, ?, ?)',
+                     (user[0], data['message'], user[1], f"{session['firstname']} {session['lastname']}", formatted_datetime))
         else:
             c.execute('INSERT INTO messages (user_id, message, role, user_name, time, status) VALUES (?, ?, ?, ?, ?, ?)',
                       (user[0], data['message'], user[1], 'University', formatted_datetime, 'approved'))
             b.create_block(sender_id=user[0], user_name=session['email'], approver_id=session['userid'],
-                           message=data['message'], role=user[1], time=formatted_datetime)
+                          message=data['message'], role=user[1], time=formatted_datetime)
         conn.commit()
     conn.close()
-
-   
 
 @app.route('/approve_message/<int:message_id>', methods=['POST'])
 def approve_message(message_id):
@@ -201,13 +198,12 @@ def approve_message(message_id):
 def reject_message(message_id):
     try:
         data = request.get_json(silent=True) or {}
- # Get the rejection reason from the request
         rejection_reason = data.get('reason', 'No reason provided')  
 
         conn = sqlite3.connect('chat_app.db')
         c = conn.cursor()
         c.execute("UPDATE messages SET status = 'rejected', rejection_reason = ? WHERE id = ?", 
-                  (rejection_reason, message_id))
+                 (rejection_reason, message_id))
         conn.commit()
         conn.close()
 
@@ -217,8 +213,6 @@ def reject_message(message_id):
         return jsonify({"success": True, "message": "Message rejected successfully."})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
-
-
 
 @socketio.on('approve_message')
 def handle_approve_message(data):
@@ -231,9 +225,8 @@ def handle_approve_message(data):
     mssg = c.fetchone()
     conn.close()
 
-b.create_block(sender_id=mssg[1], user_name=mssg[4], approver_id=session.get('userid', 0),
-               message=mssg[2], role=mssg[3], time=mssg[5])
-
+    b.create_block(sender_id=mssg[1], user_name=mssg[4], approver_id=session.get('userid', 0),
+                  message=mssg[2], role=mssg[3], time=mssg[5])
 
     emit('message_approved', data, broadcast=True)
 
@@ -245,12 +238,11 @@ def handle_reject_message(data):
     conn = sqlite3.connect('chat_app.db')
     c = conn.cursor()
     c.execute("UPDATE messages SET status = 'rejected', rejection_reason = ? WHERE id = ?", 
-              (rejection_reason, message_id))
+             (rejection_reason, message_id))
     conn.commit()
     conn.close()
 
     emit("message_rejected", {"message_id": message_id, "reason": rejection_reason}, broadcast=True)
-
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
