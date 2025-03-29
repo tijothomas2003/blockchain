@@ -117,8 +117,8 @@ def chat():
         message_id, user_id, message_text, role, status, user_name = message
         message_data = {'id': message_id, 'user_id': user_id, 'message': message_text, 'role': role, "user_name": user_name}
 
-     if status == 'pending' and int(role) < int(session.get('role', '0')):
-
+        # Correct indentation for if statement
+        if status == 'pending' and int(role) < int(session.get('role', '0')):
             pending_msg.append(message_data)
 
     block_msg = b.getAllMessage()
@@ -134,12 +134,23 @@ def chat():
             })
 
     if session['role'] == '6':
-        return render_template('index_reg.html', username=session['firstname'] + ' ' + session['lastname'],
-                               role=roles[int(session['role'])], userid=session['userid'],
-                               a_message=approved_msg, p_message=pending_msg)
-    return render_template('index.html', username=session['firstname'] + ' ' + session['lastname'],
-                           role=roles[int(session['role'])], userid=session['userid'],
-                           a_message=approved_msg, p_message=pending_msg)
+        return render_template(
+            'index_reg.html',
+            username=session['firstname'] + ' ' + session['lastname'],
+            role=roles[int(session['role'])],
+            userid=session['userid'],
+            a_message=approved_msg,
+            p_message=pending_msg
+        )
+
+    return render_template(
+        'index.html',
+        username=session['firstname'] + ' ' + session['lastname'],
+        role=roles[int(session['role'])],
+        userid=session['userid'],
+        a_message=approved_msg,
+        p_message=pending_msg
+    )
 
 @socketio.on('send_message')
 def handle_send_message(data):
