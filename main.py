@@ -66,9 +66,8 @@ def index():
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
-   username = request.form.get('email')
-password = request.form.get('password')
-
+    username = request.form.get('email')
+    password = request.form.get('password')
 
     conn = sqlite3.connect('chat_app.db')
     c = conn.cursor()
