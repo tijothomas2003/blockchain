@@ -76,12 +76,16 @@ def login():
     user = c.fetchone()
     conn.close()
 
-    if not user or user[4] != password:
+    if not user or user[3] != password:  # Fixed: user[3] instead of user[4]
         return render_template('landing.html', error='Invalid username or password')
 
-    session['firstname'], session['lastname'], session['email'], session['role'], session['userid'] = user[1], user[2], user[3], int(user[5]), user[0]
+    # Fixed: session role stored as a string, not int
+    session['firstname'], session['lastname'], session['email'], session['role'], session['userid'] = (
+        user[1], user[2], user[3], user[5], user[0]
+    )
 
     return redirect('/chat')
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -133,7 +137,7 @@ def chat():
                 'time': message['time']
             })
 
-    if int(session['role']) == 6:
+    if session['role'] == '6':
         return render_template(
             'index_reg.html',
             username=session['firstname'] + ' ' + session['lastname'],
