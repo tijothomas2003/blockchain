@@ -185,10 +185,15 @@ def approve_message(message_id):
     c.execute('SELECT * FROM messages WHERE id=?', (message_id,))
     mssg = c.fetchone()
     conn.close()
-result_block = b.create_block(sender_id=mssg[1], user_name=mssg[4], approver_id=session.get('userid', 0),
-                              message=mssg[2], role=mssg[3], time=mssg[5])
 
-
+    result_block = b.create_block(
+        sender_id=mssg[1],
+        user_name=mssg[4],
+        approver_id=session.get('userid', 0),
+        message=mssg[2],
+        role=mssg[3],
+        time=mssg[5]
+    )
 
     return jsonify({"success": result_block})
 
