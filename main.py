@@ -68,11 +68,16 @@ def index():
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
-    username = request.form.get('email')
-    password = request.form.get('password')
+    username = request.args.get('email')  # Use request.args for GET, request.form for POST
+    password = request.args.get('password')
+
+    conn = sqlite3.connect('chat_app.db')  # Open a connection
+    c = conn.cursor()  # Create a cursor
 
     c.execute('SELECT * FROM users WHERE email=?', (username,))
     user = c.fetchone()  # Fetch the user data
+
+    conn.close()  # Close connection after fetching
 
     if not user or user[4] != password:  # Ensure correct index for password
         return render_template('landing.html', error='Invalid username or password')
