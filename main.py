@@ -65,26 +65,48 @@ roles = ['Student', 'Class Representative', 'Teacher', 'HOD', 'Principal', 'Dean
 def index():
     return render_template('landing.html')
 
+
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     username = request.form.get('email')
     password = request.form.get('password')
 
-    conn = sqlite3.connect('chat_app.db')
-    c = conn.cursor()
     c.execute('SELECT * FROM users WHERE email=?', (username,))
-    user = c.fetchone()
-    conn.close()
+    user = c.fetchone()  # Fetch the user data
 
-    if not user or user[3] != password:  # Fixed: user[3] instead of user[4]
+    if not user or user[4] != password:  # Ensure correct index for password
         return render_template('landing.html', error='Invalid username or password')
 
-    # Fixed: session role stored as a string, not int
+    # Store session data correctly
     session['firstname'], session['lastname'], session['email'], session['role'], session['userid'] = (
         user[1], user[2], user[3], user[5], user[0]
     )
 
-    return redirect('/chat')
+    return redirect(url_for('dashboard'))
+
+
+# @app.route('/login', methods=['POST', 'GET'])
+# def login():
+#     username = request.form.get('email')
+#     password = request.form.get('password')
+
+#     conn = sqlite3.connect('chat_app.db')
+#     c = conn.cursor()
+#     user = c.execute('SELECT * FROM users WHERE email=?', (username,)).fetchone()
+
+#     # c.execute('SELECT * FROM users WHERE email=?', (username,))
+#     # user = c.fetchone()
+#     conn.close()
+
+#     if not user or user[] != password:  # Fixed: user[3] instead of user[4]
+#         return render_template('landing.html', error='Invalid username or password')
+
+#     # Fixed: session role stored as a string, not int
+#     session['firstname'], session['lastname'], session['email'], session['role'], session['userid'] = (
+#         user[1], user[2], user[3], user[5], user[0]
+#     )
+
+#     return redirect('/chat')
 
 
 @app.route('/register', methods=['GET', 'POST'])
