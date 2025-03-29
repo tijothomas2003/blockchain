@@ -45,8 +45,8 @@ def init_db():
             FOREIGN KEY(user_id) REFERENCES users(id)
         )
     ''')
-     # ADD THIS LINE BELOW:
-  c.execute("PRAGMA table_info(messages)")
+ # ADD THIS LINE BELOW:
+c.execute("PRAGMA table_info(messages)")
 columns = [col[1] for col in c.fetchall()]
 
 if 'rejection_reason' not in columns:
