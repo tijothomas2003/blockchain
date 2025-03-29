@@ -26,7 +26,8 @@ mkl-service==2.4.2
 packaging==24.2
 protobuf==3.20.3
 pyasn1-modules==0.2.8
-pycurl==7.45.2
+pycurl==7.45.2 --no-cache-dir
+
 pyls-spyder==0.4.0
 PyQt5==5.15.10
 PyQtWebEngine==5.15.6
